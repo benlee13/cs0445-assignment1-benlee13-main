@@ -9,6 +9,12 @@ public class A1 implements A1Interface{
                 aSize ++;
             }
         }
+        CommandNode tracker = commandHead;
+        int commandCount = 0;
+        while(tracker != null){
+            commandCount++;
+            tracker = tracker.next;
+        }
         int currCommand = 0;
         CommandNode currentCommand = commandHead;
         
@@ -68,24 +74,29 @@ public class A1 implements A1Interface{
                     case "skip":
                         int skipper = Integer.parseInt(commComponents[1]);
                         CommandNode temp = currentCommand;
+                        if(currCommand + skipper > commandCount || currCommand + skipper < 0){
+                            currCommand++;
+                            break;
+                        }
                         if(skipper > 0){
-                            for (int i = 0; i < skipper && temp != null; i++) {
+                            for (int i = 0; i < skipper; i++) {
                                 temp = temp.next;
                             }
                             if (temp != null) {
                                 currentCommand = temp;
-                                currCommand += skipper - 1;
+                                currCommand += skipper;
                             } 
+                            break;
                         }else if(skipper < 0){
                             int newPosition = currCommand + skipper;
                             if (newPosition >= 0) {
                                 CommandNode newCommand = commandHead;
-                                for (int i = 0; i < newPosition && newCommand != null; i++) {
+                                for (int i = 0; i < newPosition; i++) {
                                     newCommand = newCommand.next;
                                 }
                                 if (newCommand != null) {
                                     currentCommand = newCommand.next.next;
-                                    currCommand = newPosition + 1;
+                                    currCommand = newPosition;
                                 }
                             }
                         }
@@ -152,14 +163,19 @@ public class A1 implements A1Interface{
                                     case "skip":
                                         skipper = Integer.parseInt(commComponents[4]);
                                         temp = currentCommand;
+                                        if(currCommand + skipper > commandCount){
+                                            currCommand++;
+                                            break;
+                                        }
                                         if(skipper > 0){
-                                            for (int i = 0; i < skipper && temp != null; i++) {
+                                            for (int i = 0; i < skipper; i++) {
                                                 temp = temp.next;
                                             }
                                             if (temp != null) {
                                                 currentCommand = temp;
                                                 currCommand += skipper - 1;
                                             } 
+                                            break;
                                         }else if(skipper < 0){
                                             int newPosition = currCommand + skipper;
                                             if (newPosition >= 0) {
@@ -221,7 +237,7 @@ public class A1 implements A1Interface{
             currSize++;
         }
         current = head;
-        while(currCommand < currSize){
+        while(currCommand < commands.length){
             String[] commComponents = commands[currCommand].split(" ", 4);
             String comm = commComponents[0];
             try {
@@ -233,10 +249,11 @@ public class A1 implements A1Interface{
                         if(commIndex < 0){
                             currCommand++;
                             break;
-                        }else if(commIndex == 0){
+                        } else if(commIndex == 0){
                             newNode.next = getNode(head, 0);
-                        } else{
-                            newNode.next = getNode(head, commIndex).next;
+                            head = newNode;
+                        } else {
+                            newNode.next = getNode(head, commIndex);
                             getNode(head, commIndex - 1).next = newNode;
                         }
                         currSize++;
@@ -244,7 +261,7 @@ public class A1 implements A1Interface{
                         break;
                     case "delete":
                         commIndex = Integer.parseInt(commComponents[1]);
-                        if(currSize ==0 || commIndex < 0){
+                        if(currSize == 0 || commIndex < 0 || commIndex > commands.length - 1){
                             currCommand++;
                             break;
                         } else if(commIndex == 0){
@@ -253,29 +270,24 @@ public class A1 implements A1Interface{
                             getNode(head, commIndex - 1).next = getNode(head, commIndex).next;
                         }
                         currSize--;
+                        currCommand++;
+                        break;
                     case "move":
                         int fromIndex = Integer.parseInt(commComponents[1]);
                         int toIndex = Integer.parseInt(commComponents[2]);
-                        if(fromIndex < 0 || fromIndex > currSize || toIndex < 0 || toIndex > currSize + 1){
+                        if(fromIndex < 0 || fromIndex >= currSize || toIndex < 0 || toIndex >= currSize){
                             currCommand++;
                             break;
                         } else if(fromIndex == toIndex){
                             currCommand++;
                             break;
                         }
-                        Node from = getNode(head, fromIndex);
-                        Node to = getNode(head, toIndex);
-                        Node toPrevious = getNode(head, toIndex - 1);
 
-                        if(fromIndex == 0){
-                            head = head.next;
-                            from.next = to;
-                            getNode(head, toIndex - 1).next = from;
-                        } else{
-                            getNode(head, fromIndex - 1).next = getNode(head, fromIndex + 1);
-                            from.next = to;
-                            getNode(head, toIndex - 1).next = from;
-                        }
+                        Node from = getNode(head, fromIndex);
+                        Node next = from.next;
+                        getNode(head, fromIndex - 1).next = next;
+                        from.next = getNode(head, toIndex);
+                        head = from;
                         currCommand++;
                         break;
                     case "reverse":
@@ -283,23 +295,25 @@ public class A1 implements A1Interface{
                             currCommand++;
                             break;
                         }
-                        Node next;
-                        Node previous = null;
-                        current = head;
-                        while (current != null) {
-                            next = current.next;
-                            current.next = previous;
-                            previous = current;
-                            current = next;
+                        String[] tempData = new String[currSize];
+                        for(int i = 0; i < currSize; i++){
+                            tempData[i] = getNode(head, i).data;
                         }
-                        head = previous;
+                        int j = 0;
+                        for(int i = currSize - 1; i >= 0; i--){
+                            getNode(head, j).data = tempData[i];
+                            j++;
+                        }
+                        head = getNode(head, 0);
                         currCommand++;
                         break;
                     case "skip":
                         int skipper = Integer.parseInt(commComponents[1]);
-                        if (skipper > 0 && currCommand + skipper < commands.length) {
-                            currCommand += skipper;
+                        if (skipper < 0 || (currCommand + skipper) > commands.length - 1) {
+                            currCommand++;
+                            break;
                         }
+                        currCommand += skipper;
                         break;
                     case "ifValue":
                         if (commComponents.length < 4){
@@ -320,71 +334,67 @@ public class A1 implements A1Interface{
                                         if(commIndex < 0){
                                             currCommand++;
                                             break;
-                                        }else if(commIndex == 0){
+                                        } else if(commIndex == 0){
                                             newNode.next = getNode(head, 0);
-                                        } else{
-                                            newNode.next = getNode(head, commIndex).next;
+                                            head = newNode;
+                                        } else {
+                                            newNode.next = getNode(head, commIndex);
                                             getNode(head, commIndex - 1).next = newNode;
                                         }
                                         currSize++;
                                         currCommand++;
                                         break;
-                                    case "delete":
-                                        commIndex = Integer.parseInt(commComponents[1]);
-                                        if(currSize ==0 || commIndex < 0){
+                                        case "delete":
+                                            commIndex = Integer.parseInt(commComponents[1]);
+                                            if(currSize == 0 || commIndex < 0 || commIndex > commands.length - 1){
+                                                currCommand++;
+                                                break;
+                                            } else if(commIndex == 0){
+                                                head = head.next;
+                                            }else{
+                                                getNode(head, commIndex - 1).next = getNode(head, commIndex).next;
+                                            }
+                                            currSize--;
                                             currCommand++;
                                             break;
-                                        } else if(commIndex == 0){
-                                            head = head.next;
-                                        }else{
-                                            getNode(head, commIndex - 1).next = getNode(head, commIndex).next;
-                                        }
-                                        currSize--;
-                                    case "move":
-                                        fromIndex = Integer.parseInt(commComponents[1]);
-                                        toIndex = Integer.parseInt(commComponents[2]);
-                                        if(fromIndex < 0 || fromIndex > currSize || toIndex < 0 || toIndex > currSize + 1){
+                                        case "move":
+                                            fromIndex = Integer.parseInt(commComponents[1]);
+                                            toIndex = Integer.parseInt(commComponents[2]);
+                                            if(fromIndex < 0 || fromIndex >= currSize || toIndex < 0 || toIndex >= currSize){
+                                                currCommand++;
+                                                break;
+                                            } else if(fromIndex == toIndex){
+                                                currCommand++;
+                                                break;
+                                            }
+                                            from = getNode(head, fromIndex);
+                                            next = from.next;
+                                            getNode(head, fromIndex - 1).next = next;
+                                            from.next = getNode(head, toIndex);
+                                            head = getNode(head, 0);
                                             currCommand++;
                                             break;
-                                        } else if(fromIndex == toIndex){
+                                        case "reverse":
+                                            if(currSize == 0){
+                                                currCommand++;
+                                                break;
+                                            }
+                                            tempData = new String[currSize];
+                                            for(int i = 0; i < currSize; i++){
+                                                tempData[i] = getNode(head, i).data;
+                                            }
+                                            for(int i = currSize - 1; i > 0; i--){
+                                                getNode(head, currSize - 1 - i).data = tempData[i];
+                                            }
                                             currCommand++;
                                             break;
-                                        }
-                                        from = getNode(head, fromIndex);
-                                        to = getNode(head, toIndex);
-                                        if(fromIndex == 0){
-                                            head = head.next;
-                                            from.next = to;
-                                            getNode(head, toIndex - 1).next = from;
-                                        } else{
-                                            getNode(head, fromIndex - 1).next = getNode(head, fromIndex + 1);
-                                            from.next = to;
-                                            getNode(head, toIndex - 1).next = from;
-                                        }
-                                        currCommand++;
-                                        break;
-                                    case "reverse":
-                                        if(currSize == 0){
-                                            currCommand++;
-                                            break;
-                                        }
-                                        previous = null;
-                                        current = head;
-                                        while (current != null) {
-                                            next = current.next;
-                                            current.next = previous;
-                                            previous = current;
-                                            current = next;
-                                        }
-                                        head = previous;
-                                        currCommand++;
-                                        break;
-                                    case "skip":
-                                        skipper = Integer.parseInt(commComponents[1]);
-                                        if (skipper > 0 && currCommand + skipper < commands.length) {
-                                            currCommand += skipper;
-                                        }
-                                        break;
+                                            case "skip":
+                                                skipper = Integer.parseInt(commComponents[1]);
+                                                if (skipper < 0 || currCommand + skipper > commands.length) {
+                                                    break;
+                                                }
+                                                currCommand += skipper;
+                                                break;
                                 }
                             } catch (Exception e) {
                             }
