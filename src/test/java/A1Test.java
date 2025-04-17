@@ -1,7 +1,8 @@
-import org.junit.*;
-
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
+import org.junit.Test;
 
 public class A1Test {
 
@@ -38,7 +39,7 @@ public class A1Test {
         String[] expected = {"a", "x", "b", "c", null, null};
         assertArrayEquals(expected, arr);
     }
-
+    
     @Test
     public void testMultipleAddsAndResize() {
         String[] arr = new String[2];
@@ -154,4 +155,5 @@ public class A1Test {
         assertEquals("start", result.data);
         assertNull(result.next);
     }
+    
 }
