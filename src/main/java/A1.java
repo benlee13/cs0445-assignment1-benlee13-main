@@ -19,7 +19,7 @@ public class A1 implements A1Interface{
         CommandNode currentCommand = commandHead;
         
         while(currentCommand != null){
-            String[] commComponents = currentCommand.command.split(" ", 4);
+            String[] commComponents = currentCommand.command.split(" ", 6);
             String comm = commComponents[0];
             try {
                 switch (comm){
@@ -46,6 +46,7 @@ public class A1 implements A1Interface{
                         }
                         aSize++;
                         currentCommand = currentCommand.next;
+                        currCommand++;
                         break;
                     case "remove":
                         commIndex = Integer.parseInt(commComponents[1]);
@@ -57,6 +58,7 @@ public class A1 implements A1Interface{
                         shiftElementsLeft(a, commIndex);
                         aSize--;
                         currentCommand = currentCommand.next;
+                        currCommand++;
                         break;
                     case "swap":
                         int commIndex1 = Integer.parseInt(commComponents[1]);
@@ -70,6 +72,7 @@ public class A1 implements A1Interface{
                         a[commIndex1] = storeValue2;
                         a[commIndex2] = storeValue1;
                         currentCommand = currentCommand.next;
+                        currCommand++;
                         break;
                     case "skip":
                         int skipper = Integer.parseInt(commComponents[1]);
@@ -102,10 +105,7 @@ public class A1 implements A1Interface{
                         }
                         break;
                         
-                    case "ifValue":
-                        if (commComponents.length > 5){
-                            break;
-                        }
+                    case "ifvalue":
                         commIndex = Integer.parseInt(commComponents[1]);
                         commValue = commComponents[2];
                         if(a[commIndex].equals(commValue)){
@@ -113,12 +113,9 @@ public class A1 implements A1Interface{
                             try {
                                 switch(commCommand){
                                     case "add":
-                                        if(commComponents.length > 3){
-                                            currentCommand = currentCommand.next;
-                                            break;
-                                        }
-                                        commIndex = Integer.parseInt(commComponents[1]);
-                                        commValue = commComponents[2];
+                                        
+                                        commIndex = Integer.parseInt(commComponents[4]);
+                                        commValue = commComponents[5];
                 
                                         if(checkIndex(a,commIndex)){
                                             currentCommand = currentCommand.next;
@@ -135,9 +132,10 @@ public class A1 implements A1Interface{
                                         }
                                         aSize++;
                                         currentCommand = currentCommand.next;
+                                        currCommand++;
                                         break;
                                     case "remove":
-                                        commIndex = Integer.parseInt(commComponents[1]);
+                                        commIndex = Integer.parseInt(commComponents[4]);
                                         if(checkIndex(a, commIndex)){
                                             currentCommand = currentCommand.next;
                                             break;
@@ -146,10 +144,11 @@ public class A1 implements A1Interface{
                                         shiftElementsLeft(a, commIndex);
                                         aSize--;
                                         currentCommand = currentCommand.next;
+                                        currCommand++;
                                         break;
                                     case "swap":
-                                        commIndex1 = Integer.parseInt(commComponents[1]);
-                                        commIndex2 = Integer.parseInt(commComponents[2]);
+                                        commIndex1 = Integer.parseInt(commComponents[4]);
+                                        commIndex2 = Integer.parseInt(commComponents[5]);
                                         if(checkIndex(a, commIndex1) || checkIndex(a, commIndex2)){
                                             currentCommand = currentCommand.next;
                                             break;
@@ -159,6 +158,7 @@ public class A1 implements A1Interface{
                                         a[commIndex1] = storeValue2;
                                         a[commIndex2] = storeValue1;
                                         currentCommand = currentCommand.next;
+                                        currCommand++;
                                         break;
                                     case "skip":
                                         skipper = Integer.parseInt(commComponents[4]);
@@ -194,11 +194,13 @@ public class A1 implements A1Interface{
                             } catch (Exception e) {
                             }
                         }
+                        currentCommand = currentCommand.next;
+                        currCommand++;
                         break;
                 }
             } catch (Exception e) {
             }
-            currCommand++;
+            
         }
         return a;
     }
@@ -238,7 +240,7 @@ public class A1 implements A1Interface{
         }
         current = head;
         while(currCommand < commands.length){
-            String[] commComponents = commands[currCommand].split(" ", 4);
+            String[] commComponents = commands[currCommand].split(" ", 6);
             String comm = commComponents[0];
             try {
                 switch(comm){
@@ -261,7 +263,7 @@ public class A1 implements A1Interface{
                         break;
                     case "delete":
                         commIndex = Integer.parseInt(commComponents[1]);
-                        if(currSize == 0 || commIndex < 0 || commIndex > commands.length - 1){
+                        if(currSize == 0 || commIndex < 0 || commIndex > currSize){
                             currCommand++;
                             break;
                         } else if(commIndex == 0){
@@ -310,26 +312,22 @@ public class A1 implements A1Interface{
                     case "skip":
                         int skipper = Integer.parseInt(commComponents[1]);
                         if (skipper < 0 || (currCommand + skipper) > commands.length - 1) {
-                            currCommand++;
+                            currCommand = commands.length;
                             break;
                         }
                         currCommand += skipper;
                         break;
-                    case "ifValue":
-                        if (commComponents.length < 4){
-                            currCommand++;
-                            break;
-
-                        }
-                            commIndex = Integer.parseInt(commComponents[1]);
+                    case "ifvalue":
+                        commIndex = Integer.parseInt(commComponents[1]);
                         value = commComponents[2];
                         String commCommand = commComponents[3];
                         if(getNode(head, commIndex).data.equals(value)){
+
                             try {
                                 switch(commCommand){
                                     case "insert":
-                                        commIndex = Integer.parseInt(commComponents[1]);
-                                        value = commComponents[2];
+                                        commIndex = Integer.parseInt(commComponents[4]);
+                                        value = commComponents[5];
                                         newNode = new Node(value);
                                         if(commIndex < 0){
                                             currCommand++;
@@ -383,18 +381,26 @@ public class A1 implements A1Interface{
                                             for(int i = 0; i < currSize; i++){
                                                 tempData[i] = getNode(head, i).data;
                                             }
-                                            for(int i = currSize - 1; i > 0; i--){
-                                                getNode(head, currSize - 1 - i).data = tempData[i];
+                                            j = 0;
+                                            for(int i = currSize - 1; i >= 0; i--){
+                                                getNode(head, j).data = tempData[i];
+                                                j++;
                                             }
+                                            head = getNode(head, 0);
                                             currCommand++;
                                             break;
-                                            case "skip":
-                                                skipper = Integer.parseInt(commComponents[1]);
-                                                if (skipper < 0 || currCommand + skipper > commands.length) {
-                                                    break;
-                                                }
-                                                currCommand += skipper;
+                                        case "skip":
+                                            skipper = Integer.parseInt(commComponents[1]);
+                                            if (skipper < 0) {
                                                 break;
+                                            }
+                                            if (currCommand + skipper > commands.length){
+                                                currCommand = commands.length;
+                                                break; 
+                                            }
+
+                                            currCommand += skipper;
+                                            break;
                                 }
                             } catch (Exception e) {
                             }
